@@ -8,11 +8,14 @@
 package frc;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -23,6 +26,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.border.Border;
 
 
 /**
@@ -33,11 +37,12 @@ public class CustomDashboard {
     private JFrame logFrame, driveFrame;
     private JMenuBar mb;
     private JTextArea ta;
-    
+    private JLabel[] armPositions;
+
     public CustomDashboard(){
         //Creating the Frame
         logFrame = new JFrame("Changelog Frame");
-        driveFrame = new JFrame("Ultra Gooey");
+        driveFrame = new JFrame("Ultra GUI");
         
         logFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         driveFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -67,10 +72,32 @@ public class CustomDashboard {
         positionPanel.add(pathPanel);
         positionPanel.add(cameraPanel);
         
+        Border border = BorderFactory.createLineBorder(Color.green, 5);
+
         
-        armPanel.add(new JLabel("4B"));
-        armPanel.add(new JLabel("4H"));
+        // positions count down from top to bottom, like any standard rows
+
+        armPositions = new JLabel[9];
+        armPositions[0] = new JLabel("3 Ball Reversed");
+        armPositions[1] = new JLabel("3 Hatch Reversed");
+        armPositions[2] = new JLabel("3 Ball Standard");
+        armPositions[3] = new JLabel("3 Hatch Standard");
+        armPositions[4] = new JLabel("2 Ball Standard");
+        armPositions[5] = new JLabel("2 Hatch Standard");
+        armPositions[6] = new JLabel("1 Ball Standard");
+        armPositions[7] = new JLabel("1 Hatch Standard");
+        armPositions[8] = new JLabel("0 (Intake Mode)");
+
+        for(int i = 0; i < armPositions.length; i++){
+            armPanel.add(armPositions[i]);
+            armPanel.setBorder(border);
+            armPositions[i].setOpaque(true);
+            armPositions[i].setBackground(Color.BLACK);
+            armPositions[i].setForeground(Color.GREEN);
+        }
         
+
+
 
         tf.addKeyListener(new KeyListener(){
            
@@ -122,6 +149,19 @@ public class CustomDashboard {
         
     }
 
+    // positions count down from top to bottom, like any standard rows
+    public void changePosition(int pos){
+        for(int i = 0; i < armPositions.length; i++){
+            armPositions[i].setBackground(Color.BLACK);
+            armPositions[i].setForeground(Color.GREEN);
+            armPositions[pos].setBackground(Color.GREEN);
+            armPositions[pos].setForeground(Color.BLACK);
+        }
+
+
+    }
+
+
     public void logMessage(String msg){
         ta.append(msg + "\n");
     }
@@ -148,6 +188,7 @@ public class CustomDashboard {
         JMenuItem m11 = new JMenuItem("Drive Mode");
         JMenuItem m22 = new JMenuItem("Changelog Mode");
         
+        
         m1.add(m11);
         m1.add(m22);
         
@@ -169,10 +210,13 @@ public class CustomDashboard {
 
     }
 
+
+    // positions count down from top to bottom, like any standard rows
     public static void main(String args[]) {
         CustomDashboard cd = new CustomDashboard();
         cd.logMessage("test1");
         cd.logMessage("test2");
+        cd.changePosition(4);
     }
 
 }
