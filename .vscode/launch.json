@@ -9,6 +9,13 @@
       "name": "CodeLens (Launch) - CustomDashboard",
       "request": "launch",
       "mainClass": "frc.CustomDashboard",
+      "projectName": "CustomDashboard"
+    },
+    {
+      "type": "java",
+      "name": "CodeLens (Launch) - CustomDashboard",
+      "request": "launch",
+      "mainClass": "frc.CustomDashboard",
       "projectName": "customdashboard"
     },
     {

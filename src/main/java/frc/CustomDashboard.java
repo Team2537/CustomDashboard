@@ -8,15 +8,11 @@
 package frc;
 
 import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -28,58 +24,76 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 
+
 /**
  * Add your docs here.
  */
 public class CustomDashboard {
 
-    private JFrame frame, frame1, frame2;
+    private JFrame logFrame, driveFrame;
     private JMenuBar mb;
     private JTextArea ta;
-    private JTextArea ta1;
-
+    
     public CustomDashboard(){
         //Creating the Frame
-        frame = new JFrame("Changelog Frame");
-        frame1 = new JFrame("Drive Frame");
-        frame2 = new JFrame("Cat Frame");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 400);
-        frame1.setSize(400,400);
-        frame2.setSize(400,400);
+        logFrame = new JFrame("Changelog Frame");
+        driveFrame = new JFrame("Ultra Gooey");
+        
+        logFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        driveFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        logFrame.setSize(400, 400);
+        driveFrame.setSize(900,700);
+        
 
 
         //Creating the MenuBar and adding components
         menuBarCreation();
 
-        //Creating the panel at bottom and adding components
-        JPanel panel = new JPanel(); // the panel is not visible in output
-        JTextField tf = new JTextField(300);
-        panel.add(tf);
+        //Creating the logPanel at bottom and adding components
+        JPanel logPanel = new JPanel(); // thelogPanel is not visible in output
+        JTextField tf = new JTextField(30);
+       logPanel.add(tf);
 
-        ta1 = new JTextArea();
-        ta1.setLineWrap(true);
-        ta1.setWrapStyleWord(true);
-        ta1.setEditable(true);
-        panel.add(ta1);
-        ta1.addKeyListener(new KeyListener(){
+       // panels for Ultra Gooey mode
+        JPanel armPanel = new JPanel(new GridLayout(9, 1));
+        JPanel positionPanel = new JPanel();
+        JPanel cameraPanel = new JPanel();
+        JPanel statusPanel = new JPanel();
+        JPanel pathPanel = new JPanel();
+
+        driveFrame.getContentPane().add(BorderLayout.CENTER, positionPanel);
+        driveFrame.getContentPane().add(BorderLayout.EAST, armPanel);
+        driveFrame.getContentPane().add(BorderLayout.SOUTH, statusPanel);
+        positionPanel.add(pathPanel);
+        positionPanel.add(cameraPanel);
+        
+        
+        armPanel.add(new JLabel("4B"));
+        armPanel.add(new JLabel("4H"));
+        
+
+        tf.addKeyListener(new KeyListener(){
+           
             @Override
-            public void keyPressed(KeyEvent event){
-
+            public void keyTyped(KeyEvent e) {
+               
             }
 
             @Override
-            public void keyReleased(KeyEvent arg0) {
+            public void keyPressed(KeyEvent e) {
+                int key = e.getKeyCode();
+                
+                if(key == KeyEvent.VK_ENTER){
+                    logMessage(tf.getText());
+                    tf.setText("");
+                }
+
+        }
+            public void keyReleased(KeyEvent e){
+
 
             }
-
-            @Override
-            public void keyTyped(KeyEvent arg0) {
-
-            }
-
+        
 
         });
 
@@ -90,37 +104,22 @@ public class CustomDashboard {
         JScrollPane scroll = new JScrollPane(ta);
         scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scroll.setBounds(375, 25, 10, 1000); 
-        panel.add(scroll);
+       logPanel.add(scroll);
         ta.setLineWrap(true);
         ta.setWrapStyleWord(true);
         ta.setEditable(false);
         
         
-        // adding an image for fun
-        URL img = null;
-        try {
-            img = new URL("https://pbs.twimg.com/profile_images/981578296071720961/yLO6qr2Z_400x400.jpg");
-            
-        }
-        catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        finally{
-            ImageIcon image = new ImageIcon(img);
-            JLabel label = new JLabel("", image, JLabel.CENTER);
-            JPanel panel2 = new JPanel(new BorderLayout());
-            panel2.add( label, BorderLayout.CENTER );
-            frame2.getContentPane().add(BorderLayout.CENTER, panel2);
-        }
 
-        // Adding Components to the frame.
-        frame.getContentPane().add(scroll);
-        frame.getContentPane().add(BorderLayout.SOUTH, panel);
-        frame.getContentPane().add(BorderLayout.SOUTH, ta1);
-        frame.getContentPane().add(BorderLayout.NORTH, mb);
-        frame.setVisible(true);
-        frame1.setVisible(false);
-        frame2.setVisible(false);
+        // Adding Components to the Frame.
+        logFrame.getContentPane().add(scroll);
+        logFrame.getContentPane().add(BorderLayout.SOUTH, logPanel);
+        logFrame.getContentPane().add(BorderLayout.NORTH, mb);
+        logFrame.setVisible(true);
+        driveFrame.setVisible(false);
+
+
+        
     }
 
     public void logMessage(String msg){
@@ -128,42 +127,31 @@ public class CustomDashboard {
     }
     
     public void driveMode(){
-        frame1.setVisible(true);
-        frame.setVisible(false);
-        frame2.setVisible(false);
+        driveFrame.setVisible(true);
+        logFrame.setVisible(false);
+        
 
         menuBarCreation();
     }
 
     public void logMode(){
-        frame1.setVisible(false);
-        frame.setVisible(true);
-        frame2.setVisible(false);
+        driveFrame.setVisible(false);
+        logFrame.setVisible(true);
 
        menuBarCreation();
-    }
-
-    public void sickoMode(){
-        frame2.setVisible(true);
-        frame1.setVisible(false);
-        frame.setVisible(false);
-
-        menuBarCreation();
     }
 
     public void menuBarCreation(){
         mb = new JMenuBar();
         JMenu m1 = new JMenu("Mode");
-        JMenu m2 = new JMenu("Help");
         mb.add(m1);
-        mb.add(m2);
         JMenuItem m11 = new JMenuItem("Drive Mode");
         JMenuItem m22 = new JMenuItem("Changelog Mode");
-        JMenuItem m33 = new JMenuItem("Emotional Support Cat");
+        
         m1.add(m11);
         m1.add(m22);
-        m2.add(m33);
-        frame1.getContentPane().add(BorderLayout.NORTH, mb);
+        
+        driveFrame.getContentPane().add(BorderLayout.NORTH, mb);
      
         m11.addActionListener(new ActionListener(){
             @Override
@@ -177,12 +165,7 @@ public class CustomDashboard {
                 logMode();   
             }
         });
-        m33.addActionListener(new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                sickoMode();   
-            }
-        });
+
 
     }
 
