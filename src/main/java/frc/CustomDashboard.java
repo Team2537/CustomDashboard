@@ -4,9 +4,10 @@
 /* must be accompanied by the FIRST BSD license file in the root directory of */
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
-
+//NETWORK TABLE
+//2 or 3 classes inherit from panel
 package frc;
-
+import java.lang.Thread;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -29,6 +30,12 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.Border;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.wpilibj.Relay.Value;
+
 
 /**
  * Add your docs here.
@@ -47,6 +54,7 @@ public class CustomDashboard {
     private double pdpCurrent;
     private int encoderValue;
     private double ultrasonicValue;
+
     
 
     public CustomDashboard(){
@@ -102,7 +110,8 @@ public class CustomDashboard {
         
         sensorOutputs = new JLabel[2];
         sensorOutputs[0] = new JLabel("Encoder Value: " + encoderValue);
-        sensorOutputs[1] = new JLabel("Ultrasonic Value: " + ultrasonicValue);
+        sensorOutputs[1] = new JLabel("Ultrasonic Value: " + String.format("%5d", 0));
+
         
 
 
@@ -119,7 +128,7 @@ public class CustomDashboard {
 
         diagnostics = new JLabel[6];
         diagnostics[0] = new JLabel("Potentiometer");
-        diagnostics[1] = new JLabel("PDP");
+        diagnostics[1] = new JLabel("PDP: " + String.format("%5d", 0));
         diagnostics[2] = new JLabel("Wrist");
         diagnostics[3] = new JLabel("Intake");
         diagnostics[4] = new JLabel("Arm");
@@ -342,12 +351,52 @@ public class CustomDashboard {
 
     // positions count down from top to bottom, like any standard rows
 
+        public void run() {
+            
+            NetworkTableInstance inst = NetworkTableInstance.getDefault();
+            NetworkTable table = inst.getTable("datatable");
+            NetworkTableEntry UltraDistance = table.getEntry("Ultra");
+            NetworkTableEntry Current = table.getEntry("Current");
+            NetworkTableEntry Encoder = table.getEntry("Encoder");
+            NetworkTableEntry Temperature = table.getEntry("Temperature");
+
+            inst.startClientTeam(2537);
+            inst.startDSClient();
+            while (true) {
+            
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                System.out.println("Interrupted");
+                return;
+            }
+            
+        //double rounding and alignment
+            sensorOutputs[1].setText("Ultrasonic Value: "  + String.format("%5d", (int)(UltraDistance.getDouble(0.0))) + "   ");
+            System.out.println("DISTANCE ULTRA: " + UltraDistance.getDouble(0.0));
+
+
+
+            diagnostics[1].setText("PDP: " + String.format("%2d", (int)(Current.getDouble(0.0))) + " amp(s) " + "Temp: " + (int)(Temperature.getDouble(0)) + " C ");
+            System.out.println("CURRENT: " + Current.getDouble(0.0));
+            System.out.println("TEMPERATURE: " + Temperature.getDouble(0.0));
+
+            sensorOutputs[0].setText("Encoder Value: " + String.format("%5d", (int)(Encoder.getDouble(0.0))) + "  ");
+            System.out.println("Encoder Value: " + Encoder.getDouble(0.0));
+            }
+        }
+
+
     public static void main(String args[]) {
+
+
+
         CustomDashboard cd = new CustomDashboard();
         cd.logMessage("test1");
         cd.logMessage("test2");
         cd.changePosition(4);
         cd.potentiometerValue(false);
+        cd.run();
     }
 
 }
