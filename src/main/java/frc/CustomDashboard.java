@@ -354,11 +354,12 @@ public class CustomDashboard {
         public void run() {
             
             NetworkTableInstance inst = NetworkTableInstance.getDefault();
-            NetworkTable table = inst.getTable("datatable");
+            NetworkTable table = inst.getTable("database");
             NetworkTableEntry UltraDistance = table.getEntry("Ultra");
             NetworkTableEntry Current = table.getEntry("Current");
             NetworkTableEntry Encoder = table.getEntry("Encoder");
             NetworkTableEntry Temperature = table.getEntry("Temperature");
+            NetworkTableEntry Compressor = table.getEntry("Compressor");
 
             inst.startClientTeam(2537);
             inst.startDSClient();
@@ -375,14 +376,15 @@ public class CustomDashboard {
             sensorOutputs[1].setText("Ultrasonic Value: "  + String.format("%5d", (int)(UltraDistance.getDouble(0.0))) + "   ");
             System.out.println("DISTANCE ULTRA: " + UltraDistance.getDouble(0.0));
 
-
-
             diagnostics[1].setText("PDP: " + String.format("%2d", (int)(Current.getDouble(0.0))) + " amp(s) " + "Temp: " + (int)(Temperature.getDouble(0)) + " C ");
             System.out.println("CURRENT: " + Current.getDouble(0.0));
             System.out.println("TEMPERATURE: " + Temperature.getDouble(0.0));
 
             sensorOutputs[0].setText("Encoder Value: " + String.format("%5d", (int)(Encoder.getDouble(0.0))) + "  ");
             System.out.println("Encoder Value: " + Encoder.getDouble(0.0));
+
+            diagnostics[5].setText("Compressor: " + Compressor.getBoolean(false)); //false is off
+            System.out.println("COMPRESSOR: " + Compressor.getBoolean(false));
             }
         }
 
