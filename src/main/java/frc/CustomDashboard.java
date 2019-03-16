@@ -90,6 +90,7 @@ public class CustomDashboard {
         driveFrame.getContentPane().add(BorderLayout.CENTER, positionPanel);
         driveFrame.getContentPane().add(BorderLayout.EAST, armPanel);
         driveFrame.getContentPane().add(BorderLayout.SOUTH, statusPanel);
+        
         positionPanel.add(pathPanel);
         positionPanel.add(cameraPanel);
         statusPanel.add(BorderLayout.WEST, sensorPanel);
@@ -116,14 +117,14 @@ public class CustomDashboard {
 
 
         armPositions = new JLabel[9];
-        armPositions[0] = new JLabel("3 Ball Reversed");
-        armPositions[1] = new JLabel("3 Hatch Reversed");
-        armPositions[2] = new JLabel("3 Ball Standard");
-        armPositions[3] = new JLabel("3 Hatch Standard");
-        armPositions[4] = new JLabel("2 Ball Standard");
-        armPositions[5] = new JLabel("2 Hatch Standard");
-        armPositions[6] = new JLabel("1 Ball Standard");
-        armPositions[7] = new JLabel("1 Hatch Standard");
+        armPositions[0] = new JLabel("Default");
+        armPositions[1] = new JLabel("Ship Cargo");
+        armPositions[2] = new JLabel("Rocket Cargo 3");
+        armPositions[3] = new JLabel("Rocket Hatch 3");
+        armPositions[4] = new JLabel("Rocket Cargo 2");
+        armPositions[5] = new JLabel("Rocket Hatch 2");
+        armPositions[6] = new JLabel("Rocket Cargo 1");
+        armPositions[7] = new JLabel("Ship Hatch");
         armPositions[8] = new JLabel("0 (Intake Mode)");
 
         diagnostics = new JLabel[6];
@@ -230,30 +231,72 @@ public class CustomDashboard {
         }
     }
 
-    public void pdpValue(boolean toomuch){
+    public void pdpValue(double pdpCurrent){
         if( 1 > pdpCurrent || pdpCurrent > 4){
             diagnostics[1].setBackground(Color.RED);
         }else{
             diagnostics[1].setBackground(Color.GREEN);
+            diagnostics[1].setForeground(Color.BLACK);
         }
 
     }
 
-    public void wristValue(boolean toomuch){
+    public void wristAmpValue(double wristamperage){
 
         if(wristamperage >= 2){
             diagnostics[2].setBackground(Color.RED);
         }else{
             diagnostics[2].setBackground(Color.GREEN);
+            diagnostics[2].setForeground(Color.BLACK);
         }
 
     }
 
-    public void intakeValue(boolean toomuch){
+    public void intakeAmpValue(double intakeamperage){
         if(intakeamperage >= 2){
             diagnostics[3].setBackground(Color.RED);
         }else{
             diagnostics[3].setBackground(Color.GREEN);
+            diagnostics[3].setForeground(Color.BLACK);
+        }
+    }
+
+    public void positionDetector(double armPot, double wristPot){
+        if ((armPot == 487.0) && (wristPot == 701)) {
+            //ship hatch
+            changePosition(7);
+        }
+        if ((armPot == 442.0) && (wristPot == 643)) {
+            //Rocket Hatch 2
+            changePosition(5);
+        }
+        if ((armPot == 390.0) && (wristPot == 573)) {
+           //Rocket hatch 3
+           changePosition(3);
+        }
+        if ((armPot == 435.0) && (wristPot == 588)) {
+            //ship cargo
+            changePosition(1);
+        }
+        if ((armPot == 476.0) && (wristPot == 694)) {
+            //rocket cargo 1
+            changePosition(6);
+        }
+        if ((armPot == 430.0) && (wristPot == 633)) {
+            //rocket cargo 2
+            changePosition(4);
+        }
+        if ((armPot == 376.0) && (wristPot == 570)) {
+            //rocket cargo 3
+            changePosition(2);
+        }
+        if ((armPot == 486.0) && (wristPot == 503)) {
+            //intake
+            changePosition(8);
+        }
+        if ((armPot == 515.0) && (wristPot == 743)) {
+            //default
+            changePosition(0);
         }
     }
 /*
@@ -350,7 +393,7 @@ public class CustomDashboard {
 
 
     // positions count down from top to bottom, like any standard rows
-
+//ethernet issue, either plug in with ethernet or use without ethernet with easy to fall out power cable
         public void run() {
             
             NetworkTableInstance inst = NetworkTableInstance.getDefault();
@@ -359,7 +402,13 @@ public class CustomDashboard {
             NetworkTableEntry Current = table.getEntry("Current");
             NetworkTableEntry Encoder = table.getEntry("Encoder");
             NetworkTableEntry Temperature = table.getEntry("Temperature");
-            NetworkTableEntry Compressor = table.getEntry("Compressor");
+            NetworkTableEntry ClutchCompressor = table.getEntry("ClutchCompressor");
+            NetworkTableEntry BoostCompressor = table.getEntry("BoostCompressor");
+            NetworkTableEntry ArmPot = table.getEntry("ArmPot");
+            NetworkTableEntry WristPot = table.getEntry("WristPot");
+            NetworkTableEntry ArmAmp = table.getEntry("ArmAmp");
+            NetworkTableEntry WristAmp = table.getEntry("WristAmp");
+            NetworkTableEntry IntakeAmp = table.getEntry("IntakeAmp");
 
             inst.startClientTeam(2537);
             inst.startDSClient();
@@ -376,28 +425,46 @@ public class CustomDashboard {
             sensorOutputs[1].setText("Ultrasonic Value: "  + String.format("%5d", (int)(UltraDistance.getDouble(0.0))) + "   ");
             System.out.println("DISTANCE ULTRA: " + UltraDistance.getDouble(0.0));
 
-            diagnostics[1].setText("PDP: " + String.format("%2d", (int)(Current.getDouble(0.0))) + " amp(s) " + "Temp: " + (int)(Temperature.getDouble(0)) + " C ");
+            diagnostics[1].setText("PDP: " + String.format("%2d", (int)(Current.getDouble(0.0))) + " amp(s) " + "Temp: " + (int)(Temperature.getDouble(0.0)) + " C ");
             System.out.println("CURRENT: " + Current.getDouble(0.0));
             System.out.println("TEMPERATURE: " + Temperature.getDouble(0.0));
 
             sensorOutputs[0].setText("Encoder Value: " + String.format("%5d", (int)(Encoder.getDouble(0.0))) + "  ");
             System.out.println("Encoder Value: " + Encoder.getDouble(0.0));
 
-            diagnostics[5].setText("Compressor: " + Compressor.getBoolean(false)); //false is off
-            System.out.println("COMPRESSOR: " + Compressor.getBoolean(false));
-            }
+            diagnostics[5].setText("Clutch: " + ClutchCompressor.getBoolean(false) + " Boost: " + BoostCompressor.getBoolean(false)); //false is off
+            System.out.println("CLUTCH COMPRESSOR: " + ClutchCompressor.getBoolean(false));
+
+            diagnostics[0].setText("ArmPot: " + String.format("%2d", (int)ArmPot.getDouble(0.0)) + " WristPot: " + (int)(WristPot.getDouble(0.0)));
+            System.out.println("ARMPOT: " + ArmPot.getDouble(0.0));
+            System.out.println("WRISTPOT: " + WristPot.getDouble(0.0));    
+            
+            diagnostics[4].setText("Arm Amperage: " + String.format("%2d", (int)ArmAmp.getDouble(0.0)));
+            System.out.println("ARM AMP: " + ArmAmp.getDouble(0.0));
+
+            diagnostics[2].setText("Wrist Amperage: " + String.format("%2d", (int)WristAmp.getDouble(0.0)));
+            System.out.println("WRIST AMP: " + WristAmp.getDouble(0.0));
+
+            diagnostics[3].setText("Intake Amperage: " + String.format("%2d", (int)IntakeAmp.getDouble(0.0)));
+            System.out.println("INTAKE AMP: " + IntakeAmp.getDouble(0.0));
+            //potentiometerValue(ArmPot.getDouble(0.0), WristPot.getDouble(0.0));
+            
+
+            positionDetector(ArmPot.getDouble(0.0), WristPot.getDouble(0.0));
+            wristAmpValue(WristAmp.getDouble(0.0));
+            pdpValue(Current.getDouble(0.0));
+            intakeAmpValue(IntakeAmp.getDouble(0.0));
+        }
         }
 
 
     public static void main(String args[]) {
 
-
-
         CustomDashboard cd = new CustomDashboard();
         cd.logMessage("test1");
         cd.logMessage("test2");
-        cd.changePosition(4);
-        cd.potentiometerValue(false);
+        //cd.changePosition(0);
+        //cd.potentiometerValue(false);
         cd.run();
     }
 
