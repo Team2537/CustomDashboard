@@ -6,6 +6,13 @@
 /*----------------------------------------------------------------------------*/
 //NETWORK TABLE
 //2 or 3 classes inherit from panel
+//2 Monitors
+//one panel to display GUI
+//one to display
+//changing speed to test changing through GUI
+//append timestamp to robot?
+//push smartdashboard errors 
+//merge smartdashboard values with tiem and arm positions
 package frc;
 import java.lang.Thread;
 import java.awt.BorderLayout;
@@ -109,23 +116,22 @@ public class CustomDashboard {
         
         
         
-        sensorOutputs = new JLabel[2];
+        sensorOutputs = new JLabel[4];
         sensorOutputs[0] = new JLabel("Encoder Value: " + encoderValue);
         sensorOutputs[1] = new JLabel("Ultrasonic Value: " + String.format("%5d", 0));
-
-        
-
+        sensorOutputs[2] = new JLabel("Left Speed: " + String.format("%5d", 0));
+        sensorOutputs[3] = new JLabel("Right Speed: " + String.format("%5d", 0));
 
         armPositions = new JLabel[9];
-        armPositions[0] = new JLabel("Default");
+        armPositions[0] = new JLabel("Frame Perimeter");
         armPositions[1] = new JLabel("Ship Cargo");
-        armPositions[2] = new JLabel("Rocket Cargo 3");
-        armPositions[3] = new JLabel("Rocket Hatch 3");
-        armPositions[4] = new JLabel("Rocket Cargo 2");
-        armPositions[5] = new JLabel("Rocket Hatch 2");
-        armPositions[6] = new JLabel("Rocket Cargo 1");
+        armPositions[2] = new JLabel("High Rocket Cargo");
+        armPositions[3] = new JLabel("High Rocket Hatch");
+        armPositions[4] = new JLabel("Mid Rocket Cargo");
+        armPositions[5] = new JLabel("Mid Rocket Hatch");
+        armPositions[6] = new JLabel("Low Rocket Cargo");
         armPositions[7] = new JLabel("Ship Hatch");
-        armPositions[8] = new JLabel("0 (Intake Mode)");
+        armPositions[8] = new JLabel("Vision Input");
 
         diagnostics = new JLabel[6];
         diagnostics[0] = new JLabel("Potentiometer");
@@ -220,6 +226,10 @@ public class CustomDashboard {
         
     }
 
+    public void sendData() {
+
+    }
+
 
     public void potentiometerValue(boolean on){
         if(on == true){
@@ -261,43 +271,38 @@ public class CustomDashboard {
         }
     }
 
-    public void positionDetector(double armPot, double wristPot){
-        if ((armPot == 487.0) && (wristPot == 701)) {
-            //ship hatch
-            changePosition(7);
-        }
-        if ((armPot == 442.0) && (wristPot == 643)) {
-            //Rocket Hatch 2
-            changePosition(5);
-        }
-        if ((armPot == 390.0) && (wristPot == 573)) {
-           //Rocket hatch 3
-           changePosition(3);
-        }
-        if ((armPot == 435.0) && (wristPot == 588)) {
-            //ship cargo
-            changePosition(1);
-        }
-        if ((armPot == 476.0) && (wristPot == 694)) {
-            //rocket cargo 1
-            changePosition(6);
-        }
-        if ((armPot == 430.0) && (wristPot == 633)) {
-            //rocket cargo 2
-            changePosition(4);
-        }
-        if ((armPot == 376.0) && (wristPot == 570)) {
-            //rocket cargo 3
-            changePosition(2);
-        }
-        if ((armPot == 486.0) && (wristPot == 503)) {
-            //intake
-            changePosition(8);
-        }
-        if ((armPot == 515.0) && (wristPot == 743)) {
-            //default
-            changePosition(0);
-        }
+    public void positionDetector(String ArmSetpoint){
+        switch(ArmSetpoint){
+            case "FRAME PERIMETER":
+                changePosition(0);
+                break;
+            case "SHIP CARGO":
+                changePosition(1);
+                
+            case "HIGH ROCKET CARGO":
+                changePosition(2);
+                break;
+
+            case "HIGH ROCKET HATCH":
+                changePosition(3);
+                break;
+            case "MID ROCKET CARGO":
+                changePosition(4);
+                break;
+            case "MID ROCKET HATCH":
+                changePosition(5);
+                break;
+
+            case "LOW ROCKET CARGO":
+                changePosition(6);
+                break;
+
+            case "SHIP HATCH":
+                changePosition(7);
+                break;
+        
+        
+            }
     }
 /*
     public void armValue(boolean toomuch){
@@ -344,6 +349,7 @@ public class CustomDashboard {
 
 
     public void logMessage(String msg){
+        
         ta.append(msg + "\n");
     }
     
@@ -385,6 +391,7 @@ public class CustomDashboard {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 logMode();   
+                //call to the method
             }
         });
 
@@ -409,6 +416,10 @@ public class CustomDashboard {
             NetworkTableEntry ArmAmp = table.getEntry("ArmAmp");
             NetworkTableEntry WristAmp = table.getEntry("WristAmp");
             NetworkTableEntry IntakeAmp = table.getEntry("IntakeAmp");
+            NetworkTableEntry ArmSetpoint = table.getEntry("ArmSetpoint");
+            NetworkTableEntry VisionInput = table.getEntry("VisionInput");
+            NetworkTableEntry LeftSpeed = table.getEntry("LeftSpeed");
+            NetworkTableEntry RightSpeed = table.getEntry("RightSpeed");
 
             inst.startClientTeam(2537);
             inst.startDSClient();
@@ -422,38 +433,55 @@ public class CustomDashboard {
             }
             
         //double rounding and alignment
+        
+        //SENSOR OUTPUTS
+            sensorOutputs[0].setText("Encoder Value: " + String.format("%5d", (int)(Encoder.getDouble(0.0))) + "  ");
+            System.out.println("Encoder Value: " + Encoder.getDouble(0.0));
+
             sensorOutputs[1].setText("Ultrasonic Value: "  + String.format("%5d", (int)(UltraDistance.getDouble(0.0))) + "   ");
             System.out.println("DISTANCE ULTRA: " + UltraDistance.getDouble(0.0));
+
+            sensorOutputs[2].setText("Left Speed: " + String.format("%5d", (int)(LeftSpeed.getDouble(0.0))) + "  ");
+            System.out.println("Left Speed: " + LeftSpeed.getDouble(0.0));
+            sensorOutputs[3].setText("Right Speed: " + String.format("%5d", (int)(RightSpeed.getDouble(0.0))) + "  ");
+            System.out.println("Right Speed: " + RightSpeed.getDouble(0.0));
+
+        //ARMPOSITIONS
+            armPositions[8].setText("Vision Input: " + String.format("%2d", (int)VisionInput.getDouble(0.0)));
+            System.out.println("VISION INPUT: " + VisionInput.getDouble(0.0));
+
+            System.out.println("ARMSETPOINT: " + ArmSetpoint.getString("NONE"));
+        
+        //DIAGNOSTICS
+            diagnostics[0].setText("ArmPot: " + String.format("%2d", (int)ArmPot.getDouble(0.0)) + " WristPot: " + (int)(WristPot.getDouble(0.0)));
+            System.out.println("ARMPOT: " + ArmPot.getDouble(0.0));
+            System.out.println("WRISTPOT: " + WristPot.getDouble(0.0)); 
 
             diagnostics[1].setText("PDP: " + String.format("%2d", (int)(Current.getDouble(0.0))) + " amp(s) " + "Temp: " + (int)(Temperature.getDouble(0.0)) + " C ");
             System.out.println("CURRENT: " + Current.getDouble(0.0));
             System.out.println("TEMPERATURE: " + Temperature.getDouble(0.0));
-
-            sensorOutputs[0].setText("Encoder Value: " + String.format("%5d", (int)(Encoder.getDouble(0.0))) + "  ");
-            System.out.println("Encoder Value: " + Encoder.getDouble(0.0));
-
-            diagnostics[5].setText("Clutch: " + ClutchCompressor.getBoolean(false) + " Boost: " + BoostCompressor.getBoolean(false)); //false is off
-            System.out.println("CLUTCH COMPRESSOR: " + ClutchCompressor.getBoolean(false));
-
-            diagnostics[0].setText("ArmPot: " + String.format("%2d", (int)ArmPot.getDouble(0.0)) + " WristPot: " + (int)(WristPot.getDouble(0.0)));
-            System.out.println("ARMPOT: " + ArmPot.getDouble(0.0));
-            System.out.println("WRISTPOT: " + WristPot.getDouble(0.0));    
             
-            diagnostics[4].setText("Arm Amperage: " + String.format("%2d", (int)ArmAmp.getDouble(0.0)));
-            System.out.println("ARM AMP: " + ArmAmp.getDouble(0.0));
-
             diagnostics[2].setText("Wrist Amperage: " + String.format("%2d", (int)WristAmp.getDouble(0.0)));
             System.out.println("WRIST AMP: " + WristAmp.getDouble(0.0));
 
             diagnostics[3].setText("Intake Amperage: " + String.format("%2d", (int)IntakeAmp.getDouble(0.0)));
             System.out.println("INTAKE AMP: " + IntakeAmp.getDouble(0.0));
-            //potentiometerValue(ArmPot.getDouble(0.0), WristPot.getDouble(0.0));
             
+            diagnostics[4].setText("Arm Amperage: " + String.format("%2d", (int)ArmAmp.getDouble(0.0)));
+            System.out.println("ARM AMP: " + ArmAmp.getDouble(0.0));
 
-            positionDetector(ArmPot.getDouble(0.0), WristPot.getDouble(0.0));
+            diagnostics[5].setText("Clutch: " + ClutchCompressor.getBoolean(false) + " Boost: " + BoostCompressor.getBoolean(false)); //false is off
+            System.out.println("CLUTCH COMPRESSOR: " + ClutchCompressor.getBoolean(false));
+
+            
+            //potentiometerValue(ArmPot.getDouble(0.0), WristPot.getDouble(0.0)); WHY IS IT BOOLEAN????!
+        
+            positionDetector(ArmSetpoint.getString("NONE"));
             wristAmpValue(WristAmp.getDouble(0.0));
             pdpValue(Current.getDouble(0.0));
             intakeAmpValue(IntakeAmp.getDouble(0.0));
+
+            //logMessage("ArmSetpoint: " + ArmSetpoint.getString("None"));
         }
         }
 
@@ -461,8 +489,8 @@ public class CustomDashboard {
     public static void main(String args[]) {
 
         CustomDashboard cd = new CustomDashboard();
-        cd.logMessage("test1");
-        cd.logMessage("test2");
+        //cd.logMessage("test1");
+        //cd.logMessage("test2");
         //cd.changePosition(0);
         //cd.potentiometerValue(false);
         cd.run();
